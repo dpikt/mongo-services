@@ -3,6 +3,8 @@
 
 A tool for rapidly prototyping APIs. Inspired by the [Feathers](https://github.com/feathersjs/feathers) service design.
 
+`npm install mongo-services`
+
 
 ## How to use
 
