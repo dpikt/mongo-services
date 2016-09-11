@@ -1,6 +1,4 @@
-var mongoose = require("Mongoose"),
-    Schema = mongoose.Schema,
-    bodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 
 var NotFoundError = function () {
   this.name = "NotFoundError",
