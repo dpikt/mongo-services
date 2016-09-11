@@ -1,0 +1,15 @@
+{
+  "name": "mongo-services",
+  "version": "1.0.0",
+  "description": "Creates services using a provided model and mongoose connection, and exposes them via RESTful API.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dpikt",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "mongoose": "^4.6.0"
+  }
+}
