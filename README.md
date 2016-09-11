@@ -5,7 +5,7 @@ A tool for rapidly prototyping APIs. Inspired by the [Feathers](https://github.c
 
 
 ## How to use
-***
+
 
 ####Start by establishing a mongoose connection
 ```
@@ -51,7 +51,7 @@ Which adds the following routes:
 - `DELETE /messages/id` (delete)
 
 ## Full example
-***
+
 
 ```
 var express = require('express'),
@@ -91,7 +91,7 @@ console.log('Howdy! There\'s a server running at http://localhost:5000');
 ```
 
 ## Notes
-***
+
 mongo-services does not (yet) support:
 
 - Before/after hooks
