@@ -1,6 +1,10 @@
 {
   "name": "mongo-services",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dpikt/mongo-services.git"
+  },
   "description": "Creates services using a provided model and mongoose connection, and exposes them via RESTful API.",
   "main": "index.js",
   "scripts": {
