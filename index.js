@@ -27,12 +27,9 @@ function Service(app, name, schema) {
   var self = this;
   self.name = name;
   self.route = "/" + self.name;
-  self.schema = new Schema(schema);
+  self.schema = schema;
+  self.model = app.db.model(self.name, self.schema, self.name);
   self.hooks = [];
-
-  self.registerModel = function(schema) {
-    self.model = app.db.model(self.name, schema, self.name);
-  };
 
   // METHODS
   self.create = function(body, callback) {
@@ -65,31 +62,34 @@ function Service(app, name, schema) {
       callback(err, saved);
     });
   };
-
-  // INIT
-  self.registerModel(self.schema);
 }
 
 function Services(app) {
   if (!app.db || !app.db.Mongoose) throw Error("Must set app.db to be a Mongoose connection");
   var self = this;
   self.app = app;
-  self.app.use(bodyParser.urlencoded({ extended: true }));
-  self.app.use(bodyParser.json());
   self.serviceDict = {};
   self.app.service = function(name) {
     var service = self.serviceDict[name];
     if (!service) throw Error("No service by the name of " + name);
     return service;
   };
-  self.add = function (name, model) {
+  self.add = function (name, schema) {
     if (!name || typeof(name) != "string") throw Error("Must include name of service (string)");
-    if (!model || typeof(model) != "object") throw Error("Must include model for service (object)");
-    var service = new Service(app, name, model);
-    self.setupREST(service);
-    self.serviceDict[name] = service;
+    if (!schema || typeof(schema) != "object") throw Error("Must include schema for service (Mongoose Schema)");
+    self.serviceDict[name] = new Service(app, name, schema);
   };
-  self.setupREST = function (service) {
+  self.configureREST = function () {
+    self.app.use(bodyParser.urlencoded({ extended: true }));
+    self.app.use(bodyParser.json());
+    // Set up each service
+    var services = Object.keys(self.serviceDict);
+    for (var i = 0; i < services.length; i++) {
+      var service = self.serviceDict[services[i]];
+      self.configureRESTForService(service);
+    }
+  };
+  self.configureRESTForService = function (service) {
     // GET
     self.app.route(service.route+"/:id")
       .get(function (req, res, next) {
@@ -98,7 +98,7 @@ function Services(app) {
           if (!gotten) return next(new NotFoundError());
           res.json(gotten);
         });
-      }, handleError)
+      })
     // UPDATE
       .put(function (req, res, next) {
         // Get
@@ -116,20 +116,21 @@ function Services(app) {
             res.json(saved);
           });
         });
-      }, handleError)
+      })
     // DELETE
-    .delete(function (req, res, next) {
-        // Get
-        service.get({_id: req.params.id}, function (err, gotten) {
-          if (err) return next(err);
-          if (!gotten) return next(new NotFoundError());
-          // Delete
-          service.delete({_id: req.params.id}, function (err) {
+      .delete(function (req, res, next) {
+          // Get
+          service.get({_id: req.params.id}, function (err, gotten) {
             if (err) return next(err);
-            res.send("Deleted.");
+            if (!gotten) return next(new NotFoundError());
+            // Delete
+            service.delete({_id: req.params.id}, function (err) {
+              if (err) return next(err);
+              res.send("Deleted.");
+            });
           });
-        });
-      }, handleError);
+        })
+        .all(handleError);
     // CREATE
     self.app.route(service.route)
       .post(function (req, res, next) {
@@ -137,14 +138,15 @@ function Services(app) {
           if (err) return next(err);
           res.send(created);
         });
-      }, handleError)
+      })
     // FIND
       .get(function (req, res, next) {
         service.find(req.query, function (err, found) {
           if (err) return next(err);
           res.json(found);
         });
-      }, handleError);
+      })
+      .all(handleError);
   };
 }
 
